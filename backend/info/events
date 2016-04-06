@@ -1,0 +1,133 @@
+========================
+    transport_manager
+========================
+listen:
+system.send_to_socket (socket, message)
+system.send_to_sockets (game, message) //send_in_game_app
+system.send_in_room (game, userId, message)
+system.load_user_data
+system.save_settings
+system.save_user
+system.save_game
+system.save_chat_message
+system.save_ban
+system.delete_chat_message
+
+
+========================
+    user_manager
+========================
+listen:
+system.socket_disconnect
+system.user_disconnect
+system.user_leave_game
+user_manager.action_login
+user_manager.action_settings
+user_manager.action_changed
+
+========================
+    chat_mananger
+========================
+listen:
+chat_manager.action_message (message)
+chat_manager.action_ban (message)
+chat_manager.action_delete (message)
+
+========================
+    invite_manager
+========================
+listen:
+system.user_disconnect
+invite_manager.action_invite
+invite_manager.action_cancel
+invite_manager.action_accept
+invite_manager.action_reject
+invite_manager.action_random
+
+========================
+    room_manager
+========================
+listen:
+system.invite_accept (game, invite)
+system.user_relogin (game, userData)
+system.user_disconnect (user, userRoom)
+room_manager.action_spectate
+room_manager.action_ready
+room_manager.action_turn
+room_manager.action_event
+room_manager.action_leave
+room_manager.action_timeout
+game.round_end
+game.game_end
+
+========================
+    game_application
+========================
+listen:
+game.game_start
+game.round_start
+game.ready
+game.turn
+game.event
+game.leave
+game.timeout
+game.user_leave
+game.round_end
+game.game_end
+
+
+client
+========================
+    transport_manager
+========================
+listen:
+system.send(module, type, message)
+system.get()
+
+========================
+    user_manager
+========================
+listen:
+user_manager.login
+user_manager.user_login
+user_manager.user_leave
+user_manager.user_changed
+
+========================
+    chat_mananger
+========================
+listen:
+chat_manager.message (message)
+chat_manager.ban (message)
+
+========================
+    invite_manager
+========================
+listen:
+invite_manager.invite
+invite_manager.cancel
+invite_manager.reject
+invite_manager.random_wait
+invite_manager.random_cancel
+
+========================
+    room_manager
+========================
+listen:
+room_manager.game_start
+room_manager.game_end
+
+========================
+    game_application
+========================
+listen:
+game.game_start
+game.round_start
+game.ready
+game.turn
+game.event
+game.leave
+game.timeout
+game.user_leave
+game.round_end
+game.game_end
