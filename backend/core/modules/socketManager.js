@@ -58,8 +58,8 @@ module.exports = class SocketManager extends Manager {
             });
             yield self.test();
             yield self.resetOldSockets();
-            //yield self.subscribe(`send_to_socket_${self.serverId}`, self.sendMessageToSocket.bind(self));
-            self.eventBus.on(`send_to_socket_${self.serverId}`, self.sendMessageToSocket.bind(self));
+            yield self.subscribe(`send_to_socket_${self.serverId}`, self.sendMessageToSocket.bind(self));
+            //self.eventBus.on(`send_to_socket_${self.serverId}`, self.sendMessageToSocket.bind(self));
             self.wsServer.on('connection', self.onSocketConnected.bind(self));
             self.wsServer.on('error', self.onWebSocketError.bind(self));
 
@@ -84,7 +84,7 @@ module.exports = class SocketManager extends Manager {
             if (sockets && sockets.length > 0) {
                 log(`resetOldSockets`, `old sockets count: ${sockets.length}`);
                 // disconnect old sockets;
-                yield self.server.eventBus.emit(`socket_disconnect`, {
+                yield self.publish(`socket_disconnect`, {
                     sockets: sockets,
                     serverId: self.serverId
                 });
@@ -172,14 +172,14 @@ module.exports = class SocketManager extends Manager {
     }
 
     onSocketMessage(socket, message) {
-        this.eventBus.emit(`socket_send`, {
+        this.publish(`socket_send`, {
             socket: socket.getData(),
             message: message
         });
     }
 
     onSocketDisconnect(socket, reason) {
-        this.eventBus.emit(`socket_disconnect`, {
+        this.publish(`socket_disconnect`, {
             socket: socket.getData(),
             reason: reason
         });

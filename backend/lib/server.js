@@ -1,6 +1,7 @@
 'use strict';
 let Memory = require('./memory.js');
 let Logger = require('./logger.js');
+let TaskQueue = require('./taskQueue.js');
 let logger, log, err, wrn;
 let co = require('co');
 

@@ -45,8 +45,8 @@ module.exports = class Transport extends Manager{
                 throw Error(`test failed`);
             });
 
-        this.eventBus.on(`socket_send`, this.onSocketMessage.bind(this));
-        this.eventBus.on(`socket_disconnect`, (message) => {
+        this.subscribe(`socket_send`, this.onSocketMessage.bind(this));
+        this.subscribe(`socket_disconnect`, (message) => {
             if (message.socket) {
                 return this.onSocketDisconnect(message.socket);
             }
@@ -194,7 +194,7 @@ module.exports = class Transport extends Manager{
     sendToSocket(socket, message) {
         //TODO: check socket server and id;
         log(`sendToSocket`, `socket:  ${JSON.stringify(socket)}, ${socket.serverId}`, 3);
-        return this.eventBus.emit(`send_to_socket_${socket.serverId}`, {
+        return this.publish(`send_to_socket_${socket.serverId}`, {
             socket: socket,
             //message: `{ "module": "server","type": "error","data": "${error}" }`
             message: message
@@ -209,7 +209,7 @@ module.exports = class Transport extends Manager{
                     if (typeof message !== "string") {
                         message = JSON.stringify(message);
                     }
-                    return this.eventBus.emit(`send_to_socket_${socketData.serverId}`, {
+                    return this.publish(`send_to_socket_${socketData.serverId}`, {
                         socket: socketData,
                         message: message
                     });

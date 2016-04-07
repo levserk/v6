@@ -9,6 +9,7 @@ let InviteManager = require('./modules/inviteManager.js');
 let GameManager = require('./modules/gameManager.js');
 let EventBus = require('./eventBus.js');
 let Memory = require('./memory/memory.js');
+let TaskQueue = require('../lib/taskQueue.js');
 
 let logger, log, err, wrn;
 let co = require('co');
@@ -75,6 +76,10 @@ module.exports = class GameServer extends Server {
     initModules() {
         let self = this, conf = self.conf;
         return co(function* () {
+            if (conf.taskQueue) {
+                self.taskQueue = new TaskQueue(self, conf.taskQueue);
+                yield self.taskQueue.init();
+            }
             if (conf.memory) {
                 self.memory = new Memory(self, conf.memory);
                 yield self.memory.init();
