@@ -29,45 +29,52 @@ module.exports = class InviteManager extends Manager {
         log(`constructor`, `inviteManager created, conf: ${JSON.stringify(conf)}`);
     }
 
-    init() {
+    *init() {
         let self = this;
-        return co(function* () {
-            let test = yield self.test();
+        try {
+            yield self.test();
             for (let game of Object.keys(self.games)) {
-                yield self.memory.del(`invites_current:${game}`);
+                yield this.memory.removeInvites(game);
             }
-            self.eventBus.on(`game.user_message.invite_manager`, self.onNewMessage.bind(self));
-            self.eventBus.on(`system.close_room`, (game, roomId) => {
-                return self.onNewMessage({
-                    game: game,
-                    type: 'close_room',
-                    data: {
-                        roomId: roomId
-                    }
-                });
-            });
-            self.eventBus.on(`system.leave_user_room`, (game, userId, roomId) => {
-                return self.inviteManager.onNewMessage({
-                    game: game,
-                    type: 'user_leave_room',
-                    data: {
-                        userId: userId,
-                        roomId: roomId
-                    },
-                    sender: 'server'
-                });
-            });
-
-            return true;
-        }).then(() => {
+            this.initEvents();
             self.isRunning = true;
             log(`init`, `init success`);
-            return true;
-        }).catch((e) => {
+        } catch(e) {
             this.isRunning = false;
             err(`init`, `error: ${e}, stack: ${e.stack}`);
-            return e;
+        }
+    }
+
+    initEvents() {
+        this.eventBus.on(`invite_manager.*`,(message) => {
+            return this.onNewMessage(message);
         });
+
+        this.eventBus.on(`system.user_disconnect`,(message) => {
+            //return this.onNewMessage(message);
+        });
+
+        //this.eventBus.on(`system.close_room`, (game, roomId) => {
+        //    return this.onNewMessage({
+        //        game: game,
+        //        type: 'close_room',
+        //        data: {
+        //            roomId: roomId
+        //        }
+        //    });
+        //});
+        //
+        //this.eventBus.on(`system.leave_user_room`, (game, userId, roomId) => {
+        //    return this.onNewMessage({
+        //        game: game,
+        //        type: 'user_leave_room',
+        //        data: {
+        //            userId: userId,
+        //            roomId: roomId
+        //        },
+        //        sender: 'server'
+        //    });
+        //});
     }
 
     test() {
@@ -217,7 +224,8 @@ module.exports = class InviteManager extends Manager {
             }
             yield self.removeWaitingUser(targetId, game);
             yield self.removeWaitingUser(user.userId, game);
-            yield self.createRoom(game, targetSocket, targetId, [targetId, user.userId], invite, 'multi');
+            yield self.eventBus.emit(`system.invite_accepted`, game, targetSocket, targetId, [targetId, user.userId], invite);
+            //yield self.createRoom(game, targetSocket, targetId, [targetId, user.userId], invite, 'multi');
 
             log(`onInviteAccepted`, `start game!!`);
         });
@@ -269,7 +277,8 @@ module.exports = class InviteManager extends Manager {
                     // TODO: check sockets not need hear
                     return false;
                 }
-                yield self.createRoom(game, targetSocket, waitingId, [waitingId, user.userId], data, Room.TYPE_MULTY);
+                yield self.eventBus.emit(`system.invite_accepted`, game, targetSocket, waitingId, [waitingId, user.userId], data);
+                //yield self.createRoom(game, targetSocket, waitingId, [waitingId, user.userId], data, Room.TYPE_MULTY);
                 log(`onPlayRandom`, `start game!!`);
             } else {
                 let sendData = {};
@@ -352,117 +361,5 @@ module.exports = class InviteManager extends Manager {
         });
     }
 
-    createRoom(game, socketId, ownerId, players, inviteData, type) {
-        log(`createRoom`, `invite: ${JSON.stringify(inviteData)}, game: ${game}`);
-        let self = this, initData = self.games[game].initData;
-        let room = Room.create(game, socketId, ownerId, players, initData, inviteData, type);
-        return co(function* () {
-            // check players in room
-            for (let userId of players) {
-                if (!self.leaveCurrentUserRoom(userId, game)) {
-                    wrn(`createRoom`, `can't create new room for user ${userId}, he already in room`);
-                    return false;
-                }
-            }
 
-            // put created room in memory
-            yield self.memory.hashAdd(`rooms:${game}`, room.id, room.getDataToSave());
-
-            // set room for players
-            for (let userId of players) {
-                yield self.memory.setUserRoom(userId, game, room, ROLE_PLAYER);
-            }
-
-            yield self.eventBus.emit(`system.send_to_sockets`, game, {
-                module: 'server',
-                type: 'new_game',
-                data: room.getInfo()
-            });
-
-            return room;
-        });
-    }
-
-    leaveCurrentUserRoom(userId, game) {
-        // check user in room, and try leave it
-        let self = this;
-        return co(function* () {
-            let userRoom = yield self.memory.getUserRoom(userId, game);
-            if (!userRoom) {
-                return false;
-            }
-
-            // check room closed, or created wrong and not exists
-            let roomData = yield self.memory.hashGet(`rooms:${game}`, userRoom.roomId);
-            if (!roomData) {
-                err(`leaveCurrentUserRoom`, `user in removed room ${game}, ${userRoom.roomId}, ${userId} `);
-                yield self.delUserRoom(userId, game);
-                return true;
-            }
-
-            // check player can leave his current room
-            if (userRoom.role === ROLE_PLAYER && userRoom.type === Room.TYPE_MULTY) {
-                // user is player, we cant't start another game
-                wrn(`leaveCurrentUserRoom`, `user ${userId} already in room, ${userRoom.roomId}`, 2);
-                return false;
-            } else {
-                // leave spectator or single game
-                wrn(`leaveCurrentUserRoom`, `user ${userId} spectate in room, ${userRoom.roomId}`, 2);
-                let leaved = yield self.leaveUserRoom(userId, game, roomData.roomId);
-                if (leaved) {
-                    // send to gm user leaved room
-                    yield self.eventBus.emit(`system.user_leaved`, game, userId, userRoom);
-                }
-            }
-        });
-    }
-
-    leaveUserRoom(userId, game, roomId) {
-        let self = this;
-        log(`leaveUserRoom`, `user: ${userId}`);
-        return co(function* () {
-            let userRoom = yield self.memory.getUserRoom(userId, game);
-
-            if (!userRoom) {
-                return true;
-            }
-            if (userRoom.roomId !== roomId) {
-                err(`leaveRoom`, `user in another room ${userRoom.roomId}, old room: ${roomId}`);
-                return false;
-            }
-            else {
-                yield self.delUserRoom(userId, game);
-                return true;
-            }
-        });
-    }
-
-    closeRoom(game, roomId) {
-        let self = this;
-        log(`closeRoom`, `game: ${game}, roomId: ${roomId}`);
-        return co(function* () {
-            let roomData = yield self.memory.hashGet(`rooms:${game}`, roomId);
-            yield self.memory.hashRemove(`rooms:${game}`, roomId);
-            // remove room messages
-            yield self.memory.del(`game_events_list:${game}:${roomId}`);
-            yield self.memory.del(`game_events_current:${game}:${roomId}`);
-
-            if (!roomData) {
-                wrn(`closeRoom`, `no room!, game: ${game}, roomId: ${roomId}`, 1);
-                return false;
-            }
-
-            let room = Room.load(roomData);
-
-            for (let playerId of room.players) {
-                yield self.memory.delUserRoom(playerId, game);
-            }
-
-            yield self.eventBus.emit(`system.send_to_sockets`, game, {
-                module: 'server',
-                type: 'end_game',
-                data: { players: room.players, room: room.id }
-            });
-        });
-    }
 };

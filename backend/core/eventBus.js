@@ -12,16 +12,20 @@ module.exports = class EventBus{
         wrn = logger.wrn;
         err = logger.err;
 
-        this.emitter = new EventEmitter2();
+        this.emitter = new EventEmitter2({
+            wildcard: true,
+            delimiter: '.',
+            newListener: false
+        });
     }
 
     on(type) {
-        log('on', `addEventListener, type: ${type}`);
+        log('on', `addEventListener, type: ${type}`, 3);
         return this.emitter.on(...arguments);
     }
 
     emit(type) {
-        log('emit', `emit event, type: ${type}`);
+        log('emit', `emit event, type: ${type}`, 3);
         return this.emitter.emitAsync(...arguments)
             .then((results) => {
                 return results[0];
@@ -29,7 +33,7 @@ module.exports = class EventBus{
     }
 
     trigger(type) {
-        log('trigger', `trigger event, type: ${type}`);
+        log('trigger', `trigger event, type: ${type}`, 3);
         return this.emitter.emitAsync(...arguments)
             .then((results) => {
                 return results[0];

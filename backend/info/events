@@ -26,7 +26,7 @@ user_manager.action_settings
 user_manager.action_changed
 
 ========================
-    chat_mananger
+    chat_manager
 ========================
 listen:
 chat_manager.action_message (message)
@@ -48,7 +48,7 @@ invite_manager.action_random
     room_manager
 ========================
 listen:
-system.invite_accept (game, invite)
+system.invite_accepted (game, users, invite)
 system.user_relogin (game, userData)
 system.user_disconnect (user, userRoom)
 room_manager.action_spectate
@@ -94,7 +94,7 @@ user_manager.user_leave
 user_manager.user_changed
 
 ========================
-    chat_mananger
+    chat_manager
 ========================
 listen:
 chat_manager.message (message)

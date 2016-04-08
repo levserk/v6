@@ -5,6 +5,10 @@ let logger, log, err, wrn;
 
 module.exports = class Engine {
 
+    static get GAME_START() {
+        return 'game_start';
+    }
+
     static get USER_READY() {
         return 'user_ready';
     }
@@ -54,8 +58,16 @@ module.exports = class Engine {
         });
     }
 
+    initEvents() {
+        this.eventBus.on(`game.*`, (action) => {
+            return this.onMessage(action.type, action.room, action.user, action.data);
+        });
+    }
+
     onMessage(type, room, user, data) {
         switch (type) {
+            case Engine.GAME_START:
+                return this.onGameStart(room);
             case Engine.USER_READY:
                 return this.onUserReady(room, user, data);
             case Engine.USER_LEAVE:
@@ -69,6 +81,10 @@ module.exports = class Engine {
             default:
                 return Promise.resolve(true);
         }
+    }
+
+    onGameStart(room) {
+        return Promise.resolve(true);
     }
 
     onUserReady(room, user, data) {
@@ -286,7 +302,7 @@ module.exports = class Engine {
         return co(function* () {
             yield self.onUserLose(room, user, 'user_throw');
             yield self.gm.sendUserLeave(room, user.userId);
-            yield self.gm.sendGameEnd(room);
+            yield self.gm.closeRoom(room);
         });
     }
 

@@ -34,25 +34,32 @@ module.exports = class UserManager extends Manager {
         log(`constructor`, `userManager created, conf: ${JSON.stringify(conf)}`);
     }
 
-    init() {
-        let self = this;
-        return co(function* () {
-            let test = yield self.test();
-            self.eventBus.on(`game.user_message.user_manager`, self.onNewMessage.bind(self));
-            self.eventBus.on(`system.socket_disconnect`, self.onNewMessage.bind(self));
-            return true;
-        })
-            .then(() => {
-                self.isRunning = true;
-                log(`init`, `init success`);
+    *init() {
+        try {
+            yield this.test();
+            this.initEvents();
+            this.isRunning = true;
+            log(`init`, `init success`);
+        } catch (e) {
+            this.isRunning = false;
+            err(`init, error: ${e.stack}`);
+            throw Error(`init failed`);
+        }
+    }
 
-                return true;
-            })
-            .catch((e) => {
-                this.isRunning = false;
-                err(`init, error: ${e.stack}`);
-                throw Error(`init failed`);
-            });
+    initEvents() {
+        this.eventBus.on(`system.socket_disconnect`, (message) => {
+            return this.onNewMessage(message);
+        });
+        this.eventBus.on(`system.user_disconnect`, (message) => {
+
+        });
+        this.eventBus.on(`system.user_leave_game`, (message) => {
+
+        });
+        this.eventBus.on(`user_manager.*`, (message) => {
+            return this.onNewMessage(message);
+        });
     }
 
     test() {
@@ -89,11 +96,11 @@ module.exports = class UserManager extends Manager {
     getCurrentMessage(game, userId) {
         return this.memory.listGet(`user_messages_list:${game}:${userId}`, `user_messages_current:${game}:${userId}`)
             .then((message) => {
-            if (message) {
-                message = JSON.parse(message);
-            }
-            return message;
-        });
+                if (message) {
+                    message = JSON.parse(message);
+                }
+                return message;
+            });
     }
 
     onMessage(message) {
@@ -189,7 +196,7 @@ module.exports = class UserManager extends Manager {
             if (oldSocket) {
                 yield self.memory.removeSocketData(oldSocket.socketId);
                 // close old socket
-                yield self.eventBus.emit(`system.send_to_socket`,oldSocket, {
+                yield self.eventBus.emit(`system.send_to_socket`, oldSocket, {
                     module: 'server',
                     type: 'error',
                     data: 'new_connection'
@@ -309,7 +316,7 @@ module.exports = class UserManager extends Manager {
     loadUserData(userId, userName, game) {
         let defaultData = this.games[game];
         return this.eventBus.trigger(`system.load_user_data`, userId, game)
-        //this.storage.loadUserData(userId, game)
+            //this.storage.loadUserData(userId, game)
             .then((loadedUserData) => {
                 loadedUserData = loadedUserData || {};
                 let userData = {

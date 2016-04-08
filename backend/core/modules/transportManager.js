@@ -9,7 +9,7 @@ let co = require('co');
 const SENDER_USER = 'user';
 const SENDER_SERVER = 'server';
 
-module.exports = class Transport extends Manager{
+module.exports = class Transport extends Manager {
 
     constructor(server, conf) {
         logger = server.logger.getLogger(moduleName);
@@ -33,20 +33,22 @@ module.exports = class Transport extends Manager{
     }
 
     *init() {
-        yield this.test()
-            .then(() => {
-                this.isRunning = true;
-                log(`init`, `init success`, 3);
-                return true;
-            })
-            .catch((e) => {
-                this.isRunning = false;
-                err(`init, test error: ${e.stack}`);
-                throw Error(`test failed`);
-            });
+        try {
+            yield this.test();
+            yield this.initEvents();
+            this.isRunning = true;
+            log(`init`, `init success`, 3);
+        }
+        catch (e) {
+            this.isRunning = false;
+            err(`init, test error: ${e.stack}`);
+            throw Error(`test failed`);
+        }
+    }
 
-        this.subscribe(`socket_send`, this.onSocketMessage.bind(this));
-        this.subscribe(`socket_disconnect`, (message) => {
+    *initEvents() {
+        yield this.subscribe(`socket_send`, this.onSocketMessage.bind(this));
+        yield this.subscribe(`socket_disconnect`, (message) => {
             if (message.socket) {
                 return this.onSocketDisconnect(message.socket);
             }
@@ -80,6 +82,24 @@ module.exports = class Transport extends Manager{
         });
 
         this.eventBus.on(`system.load_user_data`, (/*game, userId*/) => {
+            return null;
+        });
+        this.eventBus.on(`system.save_user`, (/*game, userId*/) => {
+            return null;
+        });
+        this.eventBus.on(`system.save_settings`, (/*game, userId*/) => {
+            return null;
+        });
+        this.eventBus.on(`system.save_game`, (/*game, userId*/) => {
+            return null;
+        });
+        this.eventBus.on(`system.save_chat_message`, (/*game, userId*/) => {
+            return null;
+        });
+        this.eventBus.on(`system.save_ban`, (/*game, userId*/) => {
+            return null;
+        });
+        this.eventBus.on(`system.delete_chat_message`, (/*game, userId*/) => {
             return null;
         });
     }
@@ -116,7 +136,7 @@ module.exports = class Transport extends Manager{
                 }
                 game = message.data.game;
                 socket.userId = message.data.userId;
-                if (!game || !socket.userId){
+                if (!game || !socket.userId) {
                     wrn(`onSocketMessage`, ` can not login user ${socket.socketId}, message: ${JSON.stringify(message.data)}`);
                     return false;
                 }
@@ -134,12 +154,15 @@ module.exports = class Transport extends Manager{
                 }
             }
 
-            // fix old message module
+            // deprecated message module names
             if (message.module === 'server') {
                 message.module = 'user_manager';
             }
+            if (message.module === 'game_manager'){
+                message.module = 'room_manager';
+            }
 
-            let eventType = `game.user_message.${message.module}`;
+            let eventType = `${message.module}.action_${message.type}`;
 
             yield self.eventBus.emit(eventType, message);
         });

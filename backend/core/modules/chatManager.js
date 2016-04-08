@@ -26,17 +26,9 @@ module.exports = class ChatManager extends Manager {
         log(`constructor`, `chatManager created, conf: ${JSON.stringify(conf)}`);
     }
 
-    init() {
-        let self = this;
-        return co(function* () {
-            let test = yield self.test();
-
-            self.eventBus.on(`game.user_message.chat_manager`, self.onNewMessage.bind(self));
-
-            return true;
-        })
-            .then(() => {
-                self.isRunning = true;
+    *init() {
+        yield this.test().then(() => {
+                this.isRunning = true;
                 log(`init`, `init success`);
                 return true;
             })
@@ -45,6 +37,13 @@ module.exports = class ChatManager extends Manager {
                 err(`init`, `error: ${e}, stack: ${e.stack}`);
                 return e;
             });
+        this.initEvents();
+    }
+
+    initEvents() {
+        this.eventBus.on(`chat_manager.*`, (message) => {
+            return this.onNewMessage(message);
+        });
     }
 
     test() {

@@ -177,6 +177,14 @@
         $('body').append(bdiv);
 
         var div = $('<div>');
+        div.attr('id', 'settingsGameButton');
+        div.html('<span>Настройки</span>');
+        div.on('click', function () {
+            window._client.viewsManager.showSettings();
+        });
+        bdiv.append(div);
+
+        var div = $('<div>');
         div.attr('id', 'endGameButton');
         div.html('<span>Выйти из игры</span>');
         div.on('click', function () {

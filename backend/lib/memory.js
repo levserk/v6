@@ -340,7 +340,7 @@ module.exports = class Memory {
                     return current
                 end
             end`;
-            this.client.eval(script, 2, listKey, valueKey, null, (e, result) => {
+            this.client.eval(script, 2, listKey, valueKey, "null", (e, result) => {
                 if (e) {
                     err(`listAdd`, `redis eval error ${e}`);
                     rej(e);
