@@ -23,7 +23,15 @@ let defaultConf = {
                     default: {}
                 }
             },
-            test2: {}
+            test2: {
+                modes: {
+                    mode_1: {},
+                    mode_2: {}
+                },
+                clientOpts: {
+                    modes: ['mode_1', 'mode_2']
+                }
+            }
         },
         modes: {
             default: {}
@@ -47,6 +55,9 @@ let defaultConf = {
             takeBacks: 0,
             maxTimeouts: 1,
             minTurns: 0
+        },
+        clientOpts: {
+            modes: ['default']
         }
     }
 };
@@ -156,6 +167,8 @@ module.exports = class GameServer extends Server {
                 game.modes[modeKey] = mode;
             }
             game.initData = Object.assign(conf.initData, game.initData);
+            game.clientOpts = Object.assign(conf.clientOpts, game.clientOpts);
+            game.clientOpts.game = gameKey;
             games[gameKey] = game;
         }
 

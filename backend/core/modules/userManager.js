@@ -124,7 +124,7 @@ module.exports = class UserManager extends Manager {
                     break;
                 case 'settings': // player ready to play
                     yield self.onUserChanged(user, game, data);
-                    //this.storage.saveUserSettings(message.sender, message.data);
+                    yield self.eventBus.emit(`system.settings_changed`, game, user.userId, data);
                     break;
                 case 'changed':
                     yield self.onUserChanged(user, game, data);
@@ -272,7 +272,7 @@ module.exports = class UserManager extends Manager {
     }
 
     sendUserLoginData(socket, game, user) {
-        let self = this;
+        let self = this, clientOpts = this.games[game].clientOpts;
         return co(function* () {
             let userlist = yield self.memory.getUserList(game),
                 waiting = yield self.memory.getWaitingUsers(game),
@@ -288,7 +288,7 @@ module.exports = class UserManager extends Manager {
                     "rooms": rooms,
                     "waiting": waiting,
                     "settings": {},
-                    "opts": { "modes": ["default"], "game": game },
+                    "opts": clientOpts,
                     "ban": null
                 }
             });
@@ -315,7 +315,7 @@ module.exports = class UserManager extends Manager {
 
     loadUserData(userId, userName, game) {
         let defaultData = this.games[game];
-        return this.eventBus.trigger(`system.load_user_data`, userId, game)
+        return this.eventBus.trigger(`system.load_user_data`, game, userId)
             //this.storage.loadUserData(userId, game)
             .then((loadedUserData) => {
                 loadedUserData = loadedUserData || {};
@@ -339,5 +339,13 @@ module.exports = class UserManager extends Manager {
                 }
                 return userData;
             });
+    }
+
+    loadUsersRanks() {
+        // get array ranks for mode
+        // load to redis
+        // put new use rank to redis
+        // update rank in redis
+        // get user rank
     }
 };

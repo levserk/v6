@@ -15,23 +15,27 @@ module.exports = class Users extends Base {
         let self = this;
         this.router = this.router();
 
-        this.get('/users/user', self.getUser);
-        this.get('/users/ratings', self.getRatings);
-        this.get('/users/ranks', self.getRanks);
-        this.post('/users/user', self.saveUser);
-        this.post('/users/settings', self.saveSettings);
+        this.get('users/:game/user', self.getUser);
+        this.get('users/:game/ratings', self.getRatings);
+        this.get('users/:game/ranks', self.getRanks);
+        this.post('users/:game/user', self.saveUser);
+        this.post('users/:game/settings', self.saveSettings);
     }
 
     getUser(game, query) {
-        return Promise.resolve(null);
-    }
-
-    getRatings(query) {
-        if (!query || !query.game || !query.mode) {
+        if (!game || !query || !query.userId) {
             return Promise.resolve(null);
         }
-        let game = query.game,
-            mode = query.mode,
+        let userId = query.userId.toString();
+
+        return this.storage.getUserData(game, query.userId);
+    }
+
+    getRatings(game, query) {
+        if (!query || !game || !query.mode) {
+            return Promise.resolve(null);
+        }
+        let mode = query.mode,
             count = +query.count,
             offset = +query.offset,
             column = query.column,
@@ -43,10 +47,10 @@ module.exports = class Users extends Base {
         if (!offset || offset < 0) {
             offset = 0;
         }
-        if (typeof filter !== "string" || (filter = filter.trim()).length < 1) {
+        if (typeof filter !== "string" || filter === 'undefined' || (filter = filter.trim()).length < 1) {
             filter = false;
         }
-        if (!column || column.length < 1) {
+        if (!column || column.length < 1 || column === 'undefined') {
             column = 'ratingElo';
         }
         if (order === 'asc' || order === '1') {
@@ -77,14 +81,30 @@ module.exports = class Users extends Base {
     }
 
     getRanks (game, query) {
-        return Promise.resolve(null);
+        if (!game || !query || !query.mode) {
+            return Promise.resolve(null);
+        }
+        let mode = query.mode.toString();
+
+        return this.storage.getRanks(game, mode);
     }
 
     saveUser (game, data) {
-        return Promise.resolve(null);
+        if (!game || !data || !data.userId) {
+            return Promise.resolve(null);
+        }
+
+        log(`saveUser`, `data to save: ${JSON.stringify(data)}`);
+        return Promise.resolve(true);
+
+        return this.storage.saveUser(game, data);
     }
 
     saveSettings(game, data) {
-        return Promise.resolve(null);
+        if (!game || !data || !data.userId || !data.settings) {
+            return Promise.resolve(null);
+        }
+
+        return this.storage.saveSettings(game, data.userId, data.settings);
     }
 };

@@ -15,9 +15,12 @@ module.exports = class Chat extends Base {
         let self = this;
         this.router = this.router();
 
-        this.get('/chat/messages', self.getMessages);
-        this.del('/chat/message', self.delMessage);
-        this.post('/chat/message', self.saveMessage);
+        this.get('chat/:game/messages', self.getMessages);
+        this.del('chat/:game/message', self.delMessage);
+        this.post('chat/:game/message', self.saveMessage);
+        this.get('chat/:game/ban', self.getBan);
+        this.post('chat/:game/ban', self.saveBan);
+
     }
 
     getMessages(game, query) {
@@ -37,24 +40,39 @@ module.exports = class Chat extends Base {
         }
 
         log(`getData`, `get chat ${game}, ${target} ${type ? null : sender} `, 3);
-        return this.storage.getMessages(game, count, time, target, type ? null : sender)
-            .then((messages) => {
-                return JSON.stringify(messages);
-            }).catch((e)=> {
-                err(`getData`, `error: ${e.stack || e}`, 1);
-                return null;
-            });
+        return this.storage.getMessages(game, count, time, target, type ? null : sender);
     }
 
-    saveMessage(game, data) {
-        return Promise.resolve('ok');
+    saveMessage(game, message) {
+        if (!game || !message || !message.target || !message.sender || !message.time) {
+            return Promise.resolve(null);
+        }
+
+        return this.storage.saveMessage(game, message);
     }
 
     delMessage(game, query) {
-        return Promise.resolve('ok');
+        if (!game || !query || !query.id) {
+            return Promise.resolve(null);
+        }
+
+        return this.storage.deleteMessage(game, query.id);
     }
 
-    saveBan(game, data) {
-        return Promise.resolve('ok');
+    saveBan(game, ban) {
+        if (!game || !ban || !ban.userId) {
+            return Promise.resolve(null);
+        }
+
+        return this.storage.saveBan(game, ban);
     }
+
+    getBan(game, query) {
+        if (!game || !query || !query.userId) {
+            return Promise.resolve(null);
+        }
+
+        return this.storage.getBan(game, query.userId);
+    }
+
 };

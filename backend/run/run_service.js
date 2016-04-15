@@ -6,7 +6,7 @@ let apiConf = {
     logger: {
         priority: 3
     },
-    dataStorage: {
+    mongoStorage: {
         default: {
             host: 'localhost',
             port: 27017

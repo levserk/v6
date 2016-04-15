@@ -94,10 +94,22 @@ module.exports = class RoomManager extends Manager {
                 type: 'disconnect' //disconnect
             });
         });
-        this.eventBus.on(`game.roundEnd`, () => {
-            // TODO: save game, users
+        this.eventBus.on(`game.round_end`, (game, room, result, players) => {
+            let self = this;
+            return co(function* (){
+                log(`initEvents`, `on game.roundEnd, result: ${JSON.stringify(result)}`);
+                log(`initEvents`, `on game.roundEnd, players: ${JSON.stringify(players)}`);
+                for (let user of players) {
+                    yield self.memory.updateUserRating(game, room.mode, user);
+                    yield self.eventBus.emit(`system.save_user`, game, user, room.mode);
+                }
+
+                yield self.eventBus.emit(`system.save_game`, game, result);
+
+                self.sendRoundEnd(room, result, players);
+            });
         });
-        this.eventBus.on(`game.gameEnd`, () => {
+        this.eventBus.on(`game.game_end`, () => {
             // TODO: close room
         });
     }
@@ -613,10 +625,6 @@ module.exports = class RoomManager extends Manager {
                 room.userData[userId].ready = false;
                 room.userData[userId].timeouts = 0;
                 room.userData[userId].takeBacks = 0;
-            }
-
-            for (let user of players) {
-                yield self.memory.updateUserRating(game, mode, user);
             }
 
             yield self.saveGame(room, result);

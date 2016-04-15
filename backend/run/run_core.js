@@ -2,7 +2,8 @@
 
 let gameConf = {
         logger: {
-            priority: 3
+            priority: 3,
+            showOnly: ['EventBus', 'Engine', 'RoomManager']
         },
         taskQueue: {},
         mongoStorage: {},

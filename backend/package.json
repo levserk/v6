@@ -12,7 +12,7 @@
     "ws": "*",
     "co": "*",
     "json8": "*",
-    "koa" : "*",
+    "koa" : "2.*",
     "koa-router": "*",
     "koa-logger": "*"
   },

@@ -1,24 +1,25 @@
 ========================
         history
 ========================
-GET /:game/history/?mode=&userId=&count=&offset=&filter=
-GET /:game/history/game?mode=&userId=&gameId=
-GET /:game/history/score?mode=&userId=&opponentId=
-POST /:game/history/game
+GET  history/:game/?mode=&userId=&count=&offset=&filter=
+GET  history/:game/game?mode=&userId=&gameId=
+GET  history/:game?score?mode=&userId=&opponentId=
+POST history/:game
 
 ========================
         users
 ========================
-GET /:game/users/user?userId=
-GET /:game/users/ratings?mode=&column=&order=&count=&offset=&filter=
-GET /:game/users/ranks?mode=
-POST /:game/users/user
-POST /:game/users/settings
+GET  users/:game/user?userId=
+GET  users/:game/ratings?mode=&column=&order=&count=&offset=&filter=
+GET  users/:game/ranks?mode=
+POST users/:game/user
+POST users/:game/settings
 
 ========================
         chat
 ========================
-GET /:game/chat/messages?time=&target=&sender=&count=
-POST /:game/chat/ban
-POST /:game/chat/message?:query
-DEL /:game/chat/message?:query
+GET  chat/:game/messages?time=&target=&sender=&count=
+GET  chat/:game/ban?userId=
+POST chat/:game/ban
+POST chat/:game/message?:query
+DEL  chat/:game/message?:query

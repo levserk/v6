@@ -59,9 +59,9 @@ module.exports = class Engine {
     }
 
     initEvents() {
-        this.eventBus.on(`game.*`, (action) => {
-            return this.onMessage(action.type, action.room, action.user, action.data);
-        });
+        //this.eventBus.on(`game.*`, (action) => {
+        //    return this.onMessage(action.type, action.room, action.user, action.data);
+        //});
     }
 
     onMessage(type, room, user, data) {
@@ -352,7 +352,7 @@ module.exports = class Engine {
 
             log(`onRoundEnd`, `result after ratings calc: ${JSON.stringify(result)}`, 1);
 
-            return self.gm.sendRoundEnd(room, result, players);
+            return self.eventBus.emit(`game.round_end`, game, room, result, players);
         });
     }
 

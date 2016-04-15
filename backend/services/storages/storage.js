@@ -25,31 +25,25 @@ module.exports = class Storage {
         });
     }
 
-    saveUser(game, userData) {
-        return Promise.resolve(true);
-    }
-
-
-    saveUserSettings(game, userId, settings) {
-        return Promise.resolve(true);
-    }
-
-
-    getGameModeRanksList(game, mode) {
-        return Promise.resolve(null);
-    }
-
     getRatings(game, mode, count, offset, column, order, filter) {
         return new Promise((res) => {
             res(null);
         });
     }
 
+    getRanks(game, mode) {
+        return Promise.resolve(null);
+    }
 
-    saveGame (game, save){
-        this.games.push(save);
+    saveUser(game, userData) {
         return Promise.resolve(true);
     }
+
+    saveSettings(game, userId, settings) {
+        return Promise.resolve(true);
+    }
+
+
 
     getHistory(game, userId, mode, count, offset, filter) {
         return new Promise((res) => {
@@ -67,18 +61,12 @@ module.exports = class Storage {
         return Promise.resolve(null);
     }
 
-
-    saveMessage (game, message){
+    saveGame (game, save){
+        this.games.push(save);
         return Promise.resolve(true);
     }
 
-    saveUserBan (game, userId, ban){
-        return Promise.resolve(true);
-    }
 
-    deleteMessage(game, id){
-        return Promise.resolve(true);
-    }
 
     getMessages(game, count, time, target, sender) {
         return new Promise((res) => {
@@ -86,4 +74,19 @@ module.exports = class Storage {
         });
     }
 
+    getBan(game, userId) {
+
+    }
+
+    saveMessage (game, message){
+        return Promise.resolve(true);
+    }
+
+    saveBan (game, userId, ban){
+        return Promise.resolve(true);
+    }
+
+    deleteMessage(game, id){
+        return Promise.resolve(true);
+    }
 };

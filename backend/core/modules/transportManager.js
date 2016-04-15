@@ -1,6 +1,7 @@
 'use strict';
 
 let Manager = require('../../lib/manager.js');
+let APIRequest = require('./httpRequest.js');
 
 let moduleName = 'TransportManager';
 let logger, log, err, wrn;
@@ -20,6 +21,7 @@ module.exports = class Transport extends Manager {
         super(server, conf);
 
         this.server = server;
+        this.apiRequest = new APIRequest(server, {});
         this.taskQueue = server.taskQueue;
         this.memory = server.memory;
         this.eventBus = server.eventBus;
@@ -41,9 +43,24 @@ module.exports = class Transport extends Manager {
         }
         catch (e) {
             this.isRunning = false;
-            err(`init, test error: ${e.stack}`);
+            //TODO wrn api connect econnrefused
+            err(`init, test error: ${e.stack}`, 1);
             throw Error(`test failed`);
         }
+    }
+
+    *test() {
+        log(`test`, `start`);
+        let path = `/test/testGame/?v1=1&v2=2`;
+        let data = yield this.apiRequest.sendRequest(path, 'GET');
+        log(`test`, `get path: ${path}, response: ${data.data}`);
+
+        path = `/test/testGame/`;
+        data = yield this.apiRequest.sendRequest(path, 'POST', {v1:1,v2:2});
+        log(`test`, `post path: ${path}, response: ${data.result}`);
+
+        log(`test`, `end`);
+        return true;
     }
 
     *initEvents() {
@@ -81,26 +98,29 @@ module.exports = class Transport extends Manager {
             return this.sendInRoom(room, message);
         });
 
-        this.eventBus.on(`system.load_user_data`, (/*game, userId*/) => {
-            return null;
+        this.eventBus.on(`system.load_user_data`, (game, userId) => {
+            return this.apiRequest.sendRequest(`/users/${game}/user?userId=${userId}`, 'GET');
         });
-        this.eventBus.on(`system.save_user`, (/*game, userId*/) => {
-            return null;
+        this.eventBus.on(`system.load_user_ranks`, (game, mode) => {
+            return this.apiRequest.sendRequest(`/users/${game}/ranks?mode=${mode}`, 'GET');
         });
-        this.eventBus.on(`system.save_settings`, (/*game, userId*/) => {
-            return null;
+        this.eventBus.on(`system.save_user`, (game, user) => {
+            return this.apiRequest.sendRequest(`/users/${game}/user?userId=${user.userId}`, 'POST', user.getDataToSend());
         });
-        this.eventBus.on(`system.save_game`, (/*game, userId*/) => {
-            return null;
+        this.eventBus.on(`system.save_settings`, (game, userId, settings) => {
+            return this.apiRequest.sendRequest(`/users/${game}/settings?userId=${userId}`, 'POST', settings);
         });
-        this.eventBus.on(`system.save_chat_message`, (/*game, userId*/) => {
-            return null;
+        this.eventBus.on(`system.save_game`, (game, result) => {
+            return this.apiRequest.sendRequest(`/history/${game}/game`, 'POST', result);
         });
-        this.eventBus.on(`system.save_ban`, (/*game, userId*/) => {
-            return null;
+        this.eventBus.on(`system.save_chat_message`, (game, chatMessage) => {
+            return this.apiRequest.sendRequest(`/chat/${game}/message`, 'POST', chatMessage);
         });
-        this.eventBus.on(`system.delete_chat_message`, (/*game, userId*/) => {
-            return null;
+        this.eventBus.on(`system.save_ban`, (game, ban) => {
+            return this.apiRequest.sendRequest(`/chat/${game}/ban`, 'POST', ban);
+        });
+        this.eventBus.on(`system.delete_chat_message`, (game, msgId) => {
+            return this.apiRequest.sendRequest(`/chat/${game}/message?messageId=${msgId}`, 'DEL');
         });
     }
 

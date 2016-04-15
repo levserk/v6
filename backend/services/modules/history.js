@@ -15,10 +15,10 @@ module.exports = class History extends Base {
         let self = this;
         this.router = this.router();
 
-        this.get('/history/', self.getHistory);
-        this.get('/history/game', self.getGame);
-        this.get('/history/score', self.getScore);
-        this.post('/history/game', self.saveGame);
+        this.get('history/:game/games', self.getHistory);
+        this.get('history/:game/game', self.getGame);
+        this.get('history/:game/score', self.getScore);
+        this.post('history/:game/game', self.saveGame);
     }
 
     getHistory(game, query) {
@@ -79,10 +79,16 @@ module.exports = class History extends Base {
     }
 
     getScore(game, query) {
-        return Promise.resolve(null);
+        return this.storage.getScore(game, query.users);
     }
 
-    saveGame(game, data) {
-        return Promise.resolve(null);
+    saveGame(game, save) {
+        log(`saveGame`, `data to save: ${JSON.stringify(save)}`);
+        if (!game || !save || !save.mode || !save.action || !save.players || !save.timeStart){
+            return Promise.resolve(null);
+        }
+        return Promise.resolve(true);
+
+        //return this.storage.saveGame(game, save);
     }
 };

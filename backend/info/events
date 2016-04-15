@@ -57,7 +57,7 @@ room_manager.action_turn
 room_manager.action_event
 room_manager.action_leave
 room_manager.action_timeout
-game.round_end
+game.round_end (game ,room, result, players);
 game.game_end
 
 ========================

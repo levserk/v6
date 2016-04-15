@@ -16,6 +16,7 @@ module.exports = class MongoStorage extends Storage {
         super(server, conf);
 
         this.databases = new Map();
+        this.MAX_RANK = this.conf.maxRank || 10;
     }
 
     init() {
@@ -40,10 +41,35 @@ module.exports = class MongoStorage extends Storage {
         });
     }
 
-    getRatings(game, mode, count, offset, column, sortDir, filter) {
-        let self = this, timeStart = Date.now(), query = {}, sort = {}, db;
+    getUserData(game, userId) {
+        let data = {},
+            db = this.databases.get(game);
 
-        db = self.databases.get(game);
+        if (!db) {
+            err(`getUserData`, `game ${game} have not connection to db`, 1);
+            return Promise.resolve(null);
+        }
+
+        return db.collection(`users`).find({userId: userId}).limit(1).next().then((userData) => {
+            data.userData = userData;
+            return this.getSettings(game, userId);
+        }).then((settings) => {
+            data.settings = settings;
+            return this.getBan(game, userId);
+        }).then((ban) => {
+            data.ban = ban || false;
+            data.isBanned = data.ban !== false; // ????
+            return data;
+        }).catch((e) => {
+            err(`getUserData`, `mongo error: ${e}`);
+            return null;
+        });
+    }
+
+    getRatings(game, mode, count, offset, column, sortDir, filter) {
+        let timeStart = Date.now(), query = {}, sort = {}, db;
+
+        db = this.databases.get(game);
         if (!db) {
             err(`getRatings`, `game ${game} have not connection to db`, 1);
             return Promise.resolve(null);
@@ -68,6 +94,74 @@ module.exports = class MongoStorage extends Storage {
                 return null;
             });
     }
+
+    getRanks(game, mode) {
+        let db = this.databases.get(game);
+
+        if (!db) {
+            err(`getSettings`, `game ${game} have not connection to db`, 1);
+            return Promise.resolve(null);
+        }
+
+        let query = {},
+            sort = {},
+            fields = {};
+        //TODO: start game rank in conf
+        query[`${mode}.ratingElo`] = {'$gte': 1600};
+        sort[`${mode}.ratingElo`] = -1;
+        fields.userId = 1;
+        fields[`${mode}.ratingElo`] = 1;
+        fields['_id'] = 0;
+
+        return db.collection(`users`).find(query, fields).sort(sort).limit(this.MAX_RANK).toArray();
+    }
+
+    getSettings(game, userId) {
+        let db = this.databases.get(game);
+
+        if (!db) {
+            err(`getSettings`, `game ${game} have not connection to db`, 1);
+            return Promise.resolve(null);
+        }
+
+        return db.collection(`settings`).find({userId: userId}).limit(1).next();
+    }
+
+    saveUser(game, userData) {
+        let db = this.databases.get(game);
+
+        if (!db) {
+            err(`saveUser`, `game ${game} have not connection to db`, 1);
+            return Promise.resolve(null);
+        }
+
+        return db.collection('users').updateOne({userId: userData.userId}, userData, {upsert: true, w: 1}).then((result) => {
+            log(`saveUser`, `userId: ${userData.userId}, update: ${result.modifiedCount}, insert: ${result.upsertedCount}`);
+            return true;
+        }).catch((e) => {
+            err(`saveUser`, `mongo error: ${e.stack || e}`);
+            return false;
+        });
+    }
+
+    saveSettings(game, userId, settings) {
+        let db = this.databases.get(game);
+
+        if (!db) {
+            err(`saveSettings`, `game ${game} have not connection to db`, 1);
+            return Promise.resolve(null);
+        }
+
+        return db.collection('settings').updateOne({userId: userId}, {userId: userId, settings: settings}, {upsert: true, w: 1}).then((result) => {
+            log(`saveSettings`, `userId: ${userId}, update: ${result.modifiedCount}, insert: ${result.upsertedCount}`);
+            return true;
+        }).catch((e) => {
+            err(`saveSettings`, `mongo error: ${e.stack || e}`);
+            return false;
+        });
+    }
+
+
 
     getHistory(game, userId, mode, count, offset, filter) {
         let self = this, timeStart = Date.now(), query = {}, sort, db;
@@ -130,6 +224,39 @@ module.exports = class MongoStorage extends Storage {
             });
     }
 
+    getUsersScore(game, users) {
+        return Promise.resolve(null);
+    }
+
+    saveGame (game, save){
+        let db = this.databases.get(game), historySave = false;
+
+        if (!db) {
+            err(`getSettings`, `game ${game} have not connection to db`, 1);
+            return Promise.resolve(null);
+        }
+
+        return db.collection('games').insertOne(save).then((result) => {
+            log(`saveGame`, `game saved, _id: ${result.insertedId}`);
+            historySave = {
+                    _id: result.insertedId,
+                    timeStart: save.timeStart,
+                    timeEnd: save.timeEnd,
+                    players: save.players,
+                    mode: save.mode,
+                    winner: save.winner,
+                    action: save.action,
+                    userData: save.userData
+                };
+            return db.collection('history').insertOne(historySave);
+        }).catch((e)=> {
+            err(`saveGame`, `mongo error: ${e.stack || e}`);
+            return false;
+        });
+    }
+
+
+
     getMessages(game, count, time, target, sender) {
         let self = this, timeStart = Date.now(), query = {}, sort, db;
 
@@ -148,6 +275,8 @@ module.exports = class MongoStorage extends Storage {
         }
         sort = { time: -1 };
 
+        log(`getMessages`, `query: db.messages.find(${JSON.stringify(query)})`);
+
         return db.collection(`messages`).find(query).sort(sort).limit(count).toArray()
             .then((messages) => {
                 log(`getMessages`, `query: db.messages.find(${JSON.stringify(query)})
@@ -159,5 +288,50 @@ module.exports = class MongoStorage extends Storage {
                 err(`getMessages`, `mongo error: ${e}`);
                 return null;
             });
+    }
+
+    getBan(game, userId) {
+        let db = this.databases.get(game);
+
+        if (!db) {
+            err(`getSettings`, `game ${game} have not connection to db`, 1);
+            return Promise.resolve(null);
+        }
+
+        return db.collection(`bans`).find({userId: userId, timeEnd: {'$gt': Date.now()}}).limit(1).next();
+    }
+
+    saveMessage (game, message){
+        let db = this.databases.get(game);
+
+        if (!db) {
+            err(`getSettings`, `game ${game} have not connection to db`, 1);
+            return Promise.resolve(null);
+        }
+
+        return db.collection('messages').insertOne(message);
+    }
+
+    saveBan (game, userId, ban) {
+        let db = this.databases.get(game);
+
+        if (!db) {
+            err(`saveBan`, `game ${game} have not connection to db`, 1);
+            return Promise.resolve(null);
+        }
+
+        return db.collection('bans').insertOne(ban);
+    }
+
+
+    deleteMessage(game, id){
+        let db = this.databases.get(game);
+
+        if (!db) {
+            err(`getSettings`, `game ${game} have not connection to db`, 1);
+            return Promise.resolve(null);
+        }
+
+        return db.collection('messages').deleteOne({time: id});
     }
 };

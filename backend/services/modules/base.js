@@ -27,41 +27,47 @@ module.exports = class Base {
 
     get (url, callback) {
         let self = this;
-        this.router.get(url, function* (next) {
-            let data = yield callback.bind(self)(this.params.game, this.query);
-            if (data) {
-                this.body = data;
-            } else {
-                this.status = 404;
-            }
-            yield next;
+        this.router.get(url, (ctx, next) => {
+            return callback.bind(self)(ctx.params.game, ctx.query).then((data) => {
+                if (data) {
+                    ctx.body = data;
+                } else {
+                    ctx.status = 404;
+                }
+                return next();
+            }).catch((e) => {
+                console.log(e);
+                ctx.status = 500;
+                return next();
+            });
         });
     }
 
     del (url, callback) {
         let self = this;
-        this.router.del(url, function* (next) {
-            let data = yield callback.bind(self)(this.params.game, this.query);
-            if (data) {
-                this.body = data;
-            } else {
-                this.status = 404;
-            }
-            yield next;
+        this.router.del(url, (ctx, next) => {
+            return callback.bind(self)(ctx.params.game, ctx.query).then((data) => {
+                if (data) {
+                    ctx.body = data;
+                } else {
+                    ctx.status = 404;
+                }
+                return next();
+            });
         });
     }
 
     post (url, callback) {
         let self = this;
-        this.router.post(url, function* (next) {
-            //TODO: get form data
-            let data = yield callback.bind(self)(this.params.game, this.query);
-            if (data) {
-                this.body = data;
-            } else {
-                this.status = 404;
-            }
-            yield next;
+        this.router.post(url, (ctx, next) => {
+            return callback.bind(self)(ctx.params.game, ctx.query, ctx.request.body).then((data) => {
+                if (data) {
+                    ctx.body = data;
+                } else {
+                    ctx.status = 404;
+                }
+                next();
+            });
         });
     }
 
@@ -72,5 +78,7 @@ module.exports = class Base {
     get allowedMethods() {
         return this.router.allowedMethods();
     }
+
+
 
 };
