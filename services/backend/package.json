@@ -1,0 +1,21 @@
+{
+  "name": "v6-servises",
+  "version": "0.1.0",
+  "description": "V6 server api",
+  "author": {
+    "name": "King of Animals Lion"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "mongodb": "*",
+    "redis": "*",
+    "co": "*",
+    "koa" : "2.*",
+    "koa-router": "*",
+    "koa-logger": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/levserk/v6"
+  }
+}

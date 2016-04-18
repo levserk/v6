@@ -1,0 +1,39 @@
+.delete {
+    cursor: pointer;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.5;
+}
+
+.delete:hover {
+    opacity: 1;
+}
+
+.v6-buttons {
+    position: absolute;
+    top: 0px;
+    right: 10px;
+}
+
+.v6-buttons div {
+    color: blue;
+    text-align: right;
+    height: 20px;
+    line-height: 20px;
+    cursor: pointer;
+}
+
+#left-block{
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}

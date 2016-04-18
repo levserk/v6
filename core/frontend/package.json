@@ -1,0 +1,20 @@
+{
+    "name": "v6-game-client",
+    "version": "0.9.76",
+    "dependencies": {
+        "grunt": "*",
+        "grunt-requirejs": "*",
+        "grunt-contrib-cssmin": "*",
+        "grunt-contrib-uglify":"*",
+        "grunt-contrib-copy":"*",
+        "grunt-contrib-clean":"*"
+    },
+    "description": "V6 game client",
+    "author": {
+        "name": "King of Animals Lion"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/levserk/v6-game-client"
+    }
+}

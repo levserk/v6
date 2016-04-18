@@ -1,0 +1,37 @@
+<div id="v6-rating" class="v6-block-border">
+    <img class="closeIcon" src="<%= close %>" title="<%= locale.close %>">
+    <div>
+        <!-- rating filter panel -->
+        <div class="filterPanel">
+            <div style="margin-left: 8px;">
+
+            </div>
+        </div>
+        <div class="loading"><img src="<%= spin %>"></div>
+        <!-- rating table -->
+        <table class="ratingTable" cellspacing="0">
+            <thead>
+                <tr class="headTitles">
+
+                </tr>
+                <tr class="headIcons">
+
+                </tr>
+            </thead>
+            <tbody class="ratingTBody">
+
+            </tbody>
+        </table>
+
+        <!-- div show more -->
+        <div class="chat-button chat-post" id="ratingShowMore">
+            <span><%= locale.showMore %></span>
+        </div>
+
+        <!-- div bottom buttons -->
+        <div class="footButtons">
+            <div style="float:left"><span class="activeLink" id="jumpTop">[<%= locale.jumpTop%>]</span></div>
+            <div style="float:right"><span class="activeLink" id="closeRatingBtn">[<%= locale.close %>]</span> </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+<li class="chatMsg" data-msgId="<%= msg.time %>">
+    <div class="msgRow1">
+        <div class="smallRight time"><%= msg.t %></div>
+        <div class="smallRight rate"  title="<%= '(' + locale.rankPlace + ')'%>"><%= (msg.rank || '—') %></div>
+        <div class="chatUserName"
+             data-userId="<%= msg.userId%>"
+             data-userName="<%= msg.userName %>"
+             title="<%= msg.userName + ', ' + locale.rankPlace + ': ' + (msg.rank || ' — ') %>"
+        > <span class="userName"><%= msg.userName %></span> </div>
+    </div>
+    <div class="msgRow2">
+        <div class="delete" title="<%= locale.buttons.removeMessage %>" style="background-image: url(<%= imgDel %>);"></div>
+        <div class="msgTextWrap">
+            <span class="v6-msgText"><%= _.escape(msg.text) %></span>
+        </div>
+    </div>
+</li>

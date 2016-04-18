@@ -1,0 +1,351 @@
+#v6Chat {
+    position: relative;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    width: 255px;
+    padding: 5px;
+    background-color: #fff;
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 10pt;
+}
+
+#left-block #v6Chat{
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+
+    flex-basis: 55%;
+    -webkit-flex-basis: 55%;
+    /* Непонятный баг хрома с версии 48*/
+    /* flex-grow: 1; */
+    /* -webkit-flex-grow: 1;*/
+    min-height: 390px;
+    box-shadow:none;
+}
+
+
+/* скрытый чат */
+#left-block.chatHidden #v6Chat{
+    flex-basis: 19px;
+    -webkit-flex-basis: 19px;
+    flex-grow: 0;
+    -webkit-flex-grow: 0;
+    height: 19px !important;
+    margin-top: 0px;
+    border-top: none;
+    min-height: 0;
+}
+
+.chatHidden #v6Chat .tabs,
+.chatHidden #v6Chat .messagesWrap,
+.chatHidden #v6Chat .inputMsg,
+.chatHidden #v6Chat .layer1,
+.chatHidden #v6Chat .chatRules,
+.chatHidden #v6Chat .chatAdmin,
+.chatHidden #v6Chat .hideChat{
+    display: none !important;
+}
+
+.chatHidden #v6Chat .layer2{
+    margin: 0;
+}
+
+.chatHidden #v6Chat .showChat{
+    display: inline-block;
+}
+
+#v6Chat .tabs .activeTab {
+    background-color: rgba(100,142,163,.18);
+}
+
+#v6Chat .tabs {
+    width: 100%;
+    height: 20px;
+    color: #069;
+    cursor: pointer;
+    border-radius: 2px;
+    font-weight: 700;
+}
+
+#chat-select {
+    width: 150px;
+    margin-top:5px;
+    font-size:12px;
+}
+
+#v6Chat .tabs div {
+    max-width: 128px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    float: left;
+    text-align: center;
+    font-size: 95%;
+}
+
+#v6Chat .tabs div[data-type="public"] {
+    text-align: left;
+}
+
+#v6Chat .clear {
+    clear: both;
+}
+
+#v6Chat .messagesWrap {
+    height: 250px;
+    overflow: auto;
+    border: 1px solid #ddd;
+    background: #fff;
+    box-shadow: 0 2px 2px rgba(0,0,0,.03);
+    color: #444;
+    margin-top: 5px;
+}
+
+#left-block #v6Chat .messagesWrap {
+    min-height: 100px;
+    /*flex-grow: 1;*/
+    /*-webkit-flex-grow: 1;*/
+}
+
+#v6Chat .messagesWrap .userName {
+    color: #404040;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#v6Chat .chatMsg .userName:hover {
+    border-bottom: 1px solid #069;
+    text-decoration: underline;
+}
+
+#v6Chat .messagesWrap .chatUserName {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+#v6Chat .tabs .tab {
+    padding: 5px 7px 5px 7px;
+    cursor: pointer;
+}
+
+#v6Chat .placeHolderSpan {
+    color: #444;
+}
+
+#v6Chat .messagesWrap ul{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#v6Chat .messagesWrap ul li {
+    display: block;
+    padding: 5px;
+}
+
+#v6Chat .chatRules {
+    display: inline-block;
+    border-bottom: 1px solid #069;
+    cursor: pointer;
+    float: right;
+}
+
+#v6Chat .sendMsgBtn {
+    height: 28px;
+    line-height: 28px;
+    min-width: 64px;
+    color: grey;
+    margin-right: 9px;
+    padding: 0 8px;
+    border: 1px solid #b8b8b8;
+    box-shadow: 0 1px 0 rgba(0,0,0,.05);
+    background-color: #fff;
+    background-image: -webkit-linear-gradient(top,transparent,transparent);
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+#v6Chat .layer1, #v6Chat .layer2 {
+    margin-top: 8px;
+}
+
+#v6Chat .layer2 {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#v6Chat .inputMsg {
+    margin-top: 8px;
+    overflow-y: auto;
+    height: inherit;
+    max-height: 32px;
+    min-height: 32px;
+
+    background-color: #fff;
+    border: 1px solid #ddd;
+    cursor: text;
+    padding: 4px;
+    word-wrap: break-word;
+    font-size: 10pt;
+}
+
+#v6Chat .spinner {
+    width: 30px;
+    height: 30px;
+    background-size: contain;
+    display: inline-block;
+}
+
+#v6Chat .chatMsg.newMsg {
+    background-color: rgb(237, 241, 245);
+}
+
+#v6Chat .chatMsg.isAdmin .userName{
+    color: #ef4135;
+}
+
+#v6Chat .chatDay {
+    border-top: 1px solid #e8e8e8;
+    text-align: center;
+    color: #069;
+}
+
+#v6Chat .spinnerWrap {
+    text-align: center;
+    margin: 5px 0 10px 0;
+}
+
+#v6Chat .messagesWrap.disabled {
+    background: rgba(128, 128, 128, 0.1);
+}
+
+#v6Chat .delete {
+    display: none;
+    float: right;
+    width: 15px;
+    height: 15px;
+}
+
+#v6Chat .chatMsg:hover .delete {
+    display: block;
+}
+
+#v6Chat .chatMsg .smallRight {
+    float: right;
+    font-size: 85%;
+    color: #AAA;
+    margin: 0 5px;
+}
+
+#v6Chat .chatMsg .msgTextWrap {
+    max-width: 90%;
+}
+
+#v6Chat .chatMsg .v6-msgText {
+    word-wrap: break-word;
+}
+#v6Chat .msgRow1 {
+    margin-bottom: 1px;
+}
+
+#v6Chat .chatAdmin {
+    display: none;
+    float: right;
+}
+
+#v6Chat .showChat {
+    display: none;
+    border-bottom: 1px solid #069;
+    cursor: pointer;
+}
+
+#v6Chat .hideChat {
+    display: inline-block;
+    border-bottom: 1px solid #069;
+    cursor: pointer;
+}
+
+#v6Chat .dl {
+
+}
+
+
+ /*диалоговое меню чата при ЛКМ на имени игрока*/
+#v6Chat .menuElement {
+    display: none;
+    position: absolute;
+    width: 133px;
+    margin: 0; padding: 0;
+    list-style: none;
+    z-index: 100;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-bottom: 0;
+    font-size: 10px;
+}
+
+#v6Chat .menuElement li {
+    margin: 0; padding: 0;
+
+    width: auto;
+    white-space: nowrap;
+    border-bottom: 1px solid #ddd;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+
+#v6Chat .menuElement li span{
+    display: block;
+    padding: 4px 10px;
+    background: #f2f2f2;
+    color: #069;
+    font-weight: 400;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+#v6Chat .menuElement li span:hover{
+    background: #069;
+    color: #f2f2f2;
+}
+
+/*правила чата*/
+#chat-rules {
+    position: absolute;
+    width: 470px;
+    font-size: 12px;
+    display: none;
+    z-index: 5;
+
+    background: #fff;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 0 1px #ccc;
+
+    color: #444;
+}
+
+#chat-rules .closeIcon {
+    float: right;
+    cursor: pointer;
+    padding: 5px;
+}
